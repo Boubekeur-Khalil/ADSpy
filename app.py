@@ -21,34 +21,11 @@ if not ACCESS_TOKEN:
 # ===============================
 # CONFIGURATION
 # ===============================
-COUNTRY = "DZ"             # Change to your target country (e.g. DZ)
-SEARCH_TERM = "salviano"      # Must have search_terms or search_page_ids
-LIMIT = 10                 # Number of ads to fetch per request (max 100)
-GRAPH_API_VERSION = "v24.0"
-GRAPH_API_URL = f"https://graph.facebook.com/{GRAPH_API_VERSION}/ads_archive"
-
-# ===============================
-# API PARAMETERS
-# ===============================
-params = {
-    "access_token": ACCESS_TOKEN,
-    "ad_reached_countries": COUNTRY,
-    "ad_active_status": "ALL",
-    "ad_type": "ALL",
-    "search_terms": SEARCH_TERM,
-    "limit": LIMIT,
-    # ✅ Supported fields in v24.0
-    "fields": (
-        "id,"
-        "ad_creation_time,"
-        "ad_creative_bodies,"
-        "ad_creative_link_titles,"
-        "ad_creative_link_descriptions,"
-        "page_name,"
-        "ad_snapshot_url,"
-        "ad_reached_countries"
-    ),
-}
+# COUNTRY = "DZ"             # Change to your target country (e.g. DZ)
+# SEARCH_TERM = "salviano"      # Must have search_terms or search_page_ids
+# LIMIT = 10                 # Number of ads to fetch per request (max 100)
+# GRAPH_API_VERSION = "v24.0"
+# GRAPH_API_URL = f"https://graph.facebook.com/{GRAPH_API_VERSION}/ads_archive"
 
 # ===============================
 # API REQUEST
@@ -128,8 +105,10 @@ def fetch_all_ads(params):
 # ===============================
 # DISPLAY RESULTS
 # ===============================
-def display_results(ads):
-    print(f"✅ Found {len(ads)} ads matching '{SEARCH_TERM}' in {COUNTRY}.\n")
+def display_results(ads, country=None, search_term=None):
+    country = country or DEFAULT_COUNTRY
+    search_term = search_term or ""
+    print(f"✅ Found {len(ads)} ads matching '{search_term}' in {country}.\n")
     
     for i, ad in enumerate(ads, start=1):
         print(f"🔹 [{i}] {ad.get('page_name', 'Unknown Page')}")
@@ -142,14 +121,19 @@ def display_results(ads):
     
     print("\n✅ Done.")
 
-def save_results(ads):
+def save_results(ads, country=None, search_term=None):
     # Create 'results' directory if it doesn't exist
     if not os.path.exists('results'):
         os.makedirs('results')
     
     # Generate timestamp for unique filenames
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    base_filename = f"fb_ads_{COUNTRY}_{SEARCH_TERM}_{timestamp}"
+    country = country or DEFAULT_COUNTRY
+    search_term = search_term or ""
+    # sanitize filename parts
+    safe_country = str(country).replace(" ", "_")
+    safe_search = str(search_term).replace(" ", "_")
+    base_filename = f"fb_ads_{safe_country}_{safe_search}_{timestamp}"
     
     # Save as JSON
     json_path = f"results/{base_filename}.json"
@@ -226,10 +210,10 @@ def main():
         return
         
     # Display results
-    display_results(all_ads)
+    display_results(all_ads, country=args.country, search_term=args.keyword)
     
     # Save results
-    save_results(all_ads)
+    save_results(all_ads, country=args.country, search_term=args.keyword)
     
     print("\n✅ Done.")
 
