@@ -1,4 +1,18 @@
+# Environment variables
 .env
+
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+
+# Results directory
 results/
+
+# Virtual environment
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/

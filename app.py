@@ -6,6 +6,8 @@ import csv
 from datetime import datetime
 from dotenv import load_dotenv
 from urllib.parse import parse_qs, urlparse  # Add this import
+import argparse
+from constants import DEFAULT_COUNTRY, DEFAULT_LIMIT, API_FIELDS, GRAPH_API_URL
 
 # Load environment variables (make sure you have ACCESS_TOKEN=.env)
 load_dotenv()
@@ -24,8 +26,6 @@ SEARCH_TERM = "salviano"      # Must have search_terms or search_page_ids
 LIMIT = 10                 # Number of ads to fetch per request (max 100)
 GRAPH_API_VERSION = "v24.0"
 GRAPH_API_URL = f"https://graph.facebook.com/{GRAPH_API_VERSION}/ads_archive"
-
-print(f"🔎 Fetching ads from Facebook Ad Library (v24.0) for country: {COUNTRY} and keyword: '{SEARCH_TERM}' ...")
 
 # ===============================
 # API PARAMETERS
@@ -185,8 +185,32 @@ def save_results(ads):
             writer.writerow(row)
     print(f"✅ Saved CSV results to: {csv_path}")
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Facebook Ad Library Scraper')
+    parser.add_argument('--country', type=str, default=DEFAULT_COUNTRY,
+                      help='Target country code (e.g. US, DZ)')
+    parser.add_argument('--keyword', type=str, required=True,
+                      help='Search keyword')
+    parser.add_argument('--limit', type=int, default=DEFAULT_LIMIT,
+                      help='Number of ads to fetch per request (max 100)')
+    return parser.parse_args()
+
+# Modify the main() function
 def main():
-    print(f"🔎 Fetching ads from Facebook Ad Library (v24.0) for country: {COUNTRY} and keyword: '{SEARCH_TERM}' ...")
+    args = parse_args()
+    
+    print(f"🔎 Fetching ads from Facebook Ad Library (v24.0) for country: {args.country} and keyword: '{args.keyword}' ...")
+    
+    # Update params with command line arguments
+    params = {
+        "access_token": ACCESS_TOKEN,
+        "ad_reached_countries": args.country,
+        "ad_active_status": "ALL",
+        "ad_type": "ALL",
+        "search_terms": args.keyword,
+        "limit": args.limit,
+        "fields": API_FIELDS,
+    }
     
     # Fetch ads
     all_ads = fetch_all_ads(params)
